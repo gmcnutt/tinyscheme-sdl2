@@ -4,7 +4,7 @@
 #include <stdio.h>
 
 struct args {
-
+        char *filename;
 };
 
 
@@ -38,6 +38,7 @@ static void print_usage(void)
         printf("Usage:  demo [options]\n"
                "Options: \n"
                "    -h:	help\n"
+               "    -i: image filename\n"
                 );
 }
 
@@ -51,8 +52,11 @@ static void parse_args(int argc, char **argv, struct args *args)
 
         memset(args, 0, sizeof(*args));
 
-        while ((c = getopt(argc, argv, "t:h")) != -1) {
+        while ((c = getopt(argc, argv, "i:h")) != -1) {
                 switch (c) {
+                case 'i':
+                        args->filename = optarg;
+                        break;
                 case 'h':
                         print_usage();
                         exit(0);
@@ -66,6 +70,15 @@ static void parse_args(int argc, char **argv, struct args *args)
 }
 
 
+/**
+ * Free memory used to store args.
+ */
+static void free_args(struct args *args)
+{
+        memset(args, 0, sizeof(*args));
+}
+
+
 int main(int argc, char **argv)
 {
         SDL_Event event;
@@ -73,6 +86,8 @@ int main(int argc, char **argv)
         int done=0;
         Uint32 start_ticks, end_ticks, frames=0;
         struct args args;
+        SDL_Surface *image=NULL, *screen=NULL;
+
 
         parse_args(argc, argv, &args);
 
@@ -94,6 +109,18 @@ int main(int argc, char **argv)
                 return -1;
         }
 
+        /* Get the window surface for blitting. */
+        screen = SDL_GetWindowSurface(window);
+
+        /* Load an image */
+        if (args.filename) {
+                if (! (image = IMG_Load(args.filename))) {
+                        printf("IMG_Load %s: %s\n", args.filename,
+                               SDL_GetError());
+                        exit(-1);
+                }
+        }
+
         start_ticks = SDL_GetTicks();
 
         while (!done) {
@@ -111,6 +138,9 @@ int main(int argc, char **argv)
                         }
                 }
 
+                /* Render. */
+                SDL_BlitSurface(image, NULL, screen, NULL);
+                SDL_UpdateWindowSurface(window);
         }
 
         end_ticks = SDL_GetTicks();
@@ -121,6 +151,7 @@ int main(int argc, char **argv)
         }
 
         SDL_DestroyWindow(window);
+        free_args(&args);
 
         return 0;
 }
