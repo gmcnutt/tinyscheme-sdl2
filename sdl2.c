@@ -1,14 +1,32 @@
-#include <stdio.h>
+#include <SDL2/SDL.h>
+#include <SDL2/SDL_log.h>
 #include "scheme-private.h"
 
 
-pointer sdl2_init(scheme *sc, pointer args)
+/**
+ * Initialize the SDL2 subsystem.
+ */
+static pointer sdl2_init(scheme *sc, pointer args)
 {
-	printf("sdl2_init called\n");
+	/* Initialize the video, event, threading and file i/o subsystems. */
+	if (SDL_Init(SDL_INIT_VIDEO)) {
+		SDL_LogCritical(SDL_LOG_CATEGORY_APPLICATION,
+				"SDL_Init: %s\n", SDL_GetError());
+		return sc->NIL;
+	}
 	return sc->T;
 }
 
 
+/**
+ * Initialize this dynamic extension.
+ *
+ * This is called by tinyscheme in response to
+ *
+ *     (load-extension "sdl2")
+ *
+ * It adds all of our functions into the scheme environment.
+ */
 void init_sdl2(scheme *sc)
 {
 	sc->vptr->scheme_define(

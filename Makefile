@@ -18,7 +18,7 @@ endif
 all: $(apps)
 
 sdl2.so: sdl2.c Makefile
-	$(CC) -I $(tinyschemedir) -shared -Wall -fPIC $(CFLAGS) -DUSE_DL=1 -o sdl2.so sdl2.c
+	$(CC) -I $(tinyschemedir) -shared -Wall -fPIC $(CFLAGS) -DUSE_DL=1 -o sdl2.so sdl2.c -lSDL2 -lSDL2_image -Wl,-rpath=/usr/local/lib
 	strip sdl2.so
 
 demo: demo.o $(objects)
