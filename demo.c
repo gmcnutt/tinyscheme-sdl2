@@ -5,6 +5,7 @@
 
 struct args {
         char *filename;
+        char *cmd;
 };
 
 
@@ -35,10 +36,12 @@ void on_keydown(SDL_KeyboardEvent *event)
  */
 static void print_usage(void)
 {
-        printf("Usage:  demo [options]\n"
+        printf("Usage:  demo [options] [command]\n"
                "Options: \n"
                "    -h:	help\n"
                "    -i: image filename\n"
+               "Commands:\n"
+               "    info    Show graphics info\n"
                 );
 }
 
@@ -67,22 +70,87 @@ static void parse_args(int argc, char **argv, struct args *args)
                         break;
                 }
         }
-}
 
+        /* Any remaining option is assumed to be the save-file to load the game
+         * from. If there is none then abort. */
+        if (optind < argc) {
+                args->cmd = argv[optind];
+        }
+}
 
 /**
- * Free memory used to store args.
+ * Print renderer info to stdout.
  */
-static void free_args(struct args *args)
+static void show_renderer_info(SDL_RendererInfo *info)
 {
-        memset(args, 0, sizeof(*args));
+        Uint32 tfi;
+
+        printf("name: %s\n", info->name);
+        printf("\tflags: 0x%x - ", info->flags);
+        if (info->flags & SDL_RENDERER_SOFTWARE) {
+                printf("software ");
+        }
+        if (info->flags & SDL_RENDERER_ACCELERATED) {
+                printf("accelerated ");
+        }
+        if (info->flags & SDL_RENDERER_PRESENTVSYNC) {
+                printf("presentvsync ");
+        }
+        if (info->flags & SDL_RENDERER_TARGETTEXTURE) {
+                printf("targettexture ");
+        }
+        printf("\n");
+        printf("\tnum_texture_formats: %d\n", info->num_texture_formats);
+        for (tfi = 0; tfi < info->num_texture_formats; tfi++) {
+                Uint32 tf = info->texture_formats[tfi];
+                printf("\tTexture format %d:\n", tfi);
+                printf("\t\tname: %s\n", SDL_GetPixelFormatName(tf));
+                printf("\t\ttype: %d\n", SDL_PIXELTYPE(tf));
+                printf("\t\torder: %d\n", SDL_PIXELORDER(tf));
+                printf("\t\tlayout: %d\n", SDL_PIXELLAYOUT(tf));
+                printf("\t\tbitsperpixel: %d\n", SDL_BITSPERPIXEL(tf));
+                printf("\t\tbytesperpixel: %d\n",
+                       SDL_BYTESPERPIXEL(tf));
+                printf("\t\tindexed: %c\n",
+                       SDL_ISPIXELFORMAT_INDEXED(tf) ? 'y': 'n');
+                printf("\t\talpha: %c\n",
+                       SDL_ISPIXELFORMAT_ALPHA(tf) ? 'y': 'n');
+                printf("\t\tfourcc: %c\n",
+                       SDL_ISPIXELFORMAT_FOURCC(tf) ? 'y': 'n');
+        }
+        printf("\tmax_texture_width: %d\n", info->max_texture_width);
+        printf("\tmax_texture_height: %d\n", info->max_texture_height);
+
 }
 
+/**
+ * Print available driver info to stdout.
+ */
+static void show_driver_info(void)
+{
+        int i, n;
+
+        n = SDL_GetNumRenderDrivers();
+        printf("%d renderer drivers\n", n);
+        for (i = 0; i < n; i++) {
+                SDL_RendererInfo info;
+
+                if (SDL_GetRenderDriverInfo(i, &info)) {
+                        printf("SDL_GetRenderDriverInfo(%d): %s\n",
+                               i, SDL_GetError());
+                        exit(-1);
+                }
+
+                show_renderer_info(&info);
+        }
+}
 
 int main(int argc, char **argv)
 {
         SDL_Event event;
-        SDL_Window *window;
+        SDL_Window *window=NULL;
+        SDL_Renderer *renderer=NULL;
+        SDL_RendererInfo info;
         int done=0;
         Uint32 start_ticks, end_ticks, frames=0;
         struct args args;
@@ -90,6 +158,12 @@ int main(int argc, char **argv)
 
 
         parse_args(argc, argv, &args);
+
+        if (args.cmd) {
+                if (! strcmp(args.cmd, "info")) {
+                        show_driver_info();
+                }
+        }
 
         /* Init SDL */
         if (SDL_Init(SDL_INIT_VIDEO)) {
@@ -105,9 +179,19 @@ int main(int argc, char **argv)
                        "Demo", SDL_WINDOWPOS_UNDEFINED,
                        SDL_WINDOWPOS_UNDEFINED, 640, 480,
                        SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN))) {
-                printf("SDL_Init: %s\n", SDL_GetError());
+                printf("SDL_CreateWindow: %s\n", SDL_GetError());
                 return -1;
         }
+
+        /* Create the renderer. */
+        if (! (renderer = SDL_CreateRenderer(window, -1, 0))) {
+                printf("SDL_CreateRenderer: %s\n", SDL_GetError());
+                goto destroy_window;
+        }
+
+        SDL_GetRendererInfo(renderer, &info);
+        printf("Created renderer info:\n");
+        show_renderer_info(&info);
 
         /* Get the window surface for blitting. */
         screen = SDL_GetWindowSurface(window);
@@ -150,8 +234,9 @@ int main(int argc, char **argv)
                         );
         }
 
+        SDL_DestroyRenderer(renderer);
+destroy_window:
         SDL_DestroyWindow(window);
-        free_args(&args);
 
         return 0;
 }
