@@ -1,7 +1,8 @@
 #include <SDL2/SDL.h>
-#include <SDL/SDL_image.h>
+#include <SDL2/SDL_image.h>
 #include <getopt.h>
 #include <stdio.h>
+
 
 struct args {
         char *filename;
@@ -43,6 +44,16 @@ static void print_usage(void)
                "Commands:\n"
                "    info    Show graphics info\n"
                 );
+}
+
+
+static void draw_grid(SDL_Renderer *renderer)
+{
+	SDL_SetRenderDrawColor(renderer, 0xff, 0xff, 0xff, SDL_ALPHA_OPAQUE);
+	SDL_RenderClear(renderer);
+	SDL_SetRenderDrawColor(renderer, 0x10, 0xf0, 0xf0, SDL_ALPHA_OPAQUE);
+	SDL_RenderDrawLine(renderer, 0, 0, 200, 200);
+	SDL_RenderPresent(renderer);
 }
 
 
@@ -223,8 +234,12 @@ int main(int argc, char **argv)
                 }
 
                 /* Render. */
-                SDL_BlitSurface(image, NULL, screen, NULL);
-                SDL_UpdateWindowSurface(window);
+		if (image) {
+			SDL_BlitSurface(image, NULL, screen, NULL);
+			SDL_UpdateWindowSurface(window);
+		} else {
+			draw_grid(renderer);
+		}
         }
 
         end_ticks = SDL_GetTicks();
