@@ -1,12 +1,10 @@
-sources := $(wildcard *.c)
-testsources := $(wildcard test*.c)
-testsources += cli.c demo.c
-libsources := $(filter-out $(testsources),$(sources))
-objects = $(libsources:.c=.o)
+sources := log.c sdl2.c scm.c
+objects = $(sources:.c=.o)
 tinyschemedir := $(HOME)/src/tinyscheme-1.41
 CFLAGS += -Werror -Wfatal-errors
 CFLAGS += -std=c99
 CFLAGS += -I $(tinyschemedir) -DUSE_DL=1
+CFLAGS += -fPIC
 
 ifeq ($(OPTIMIZE), true)
 	CFLAGS += -O3
@@ -16,8 +14,8 @@ endif
 
 all: sdl2.so
 
-sdl2.so: sdl2.c Makefile
-	$(CC) -I $(tinyschemedir) -shared -Wall -fPIC $(CFLAGS) -DUSE_DL=1 -o sdl2.so sdl2.c -lSDL2 -lSDL2_image -Wl,-rpath=/usr/local/lib
+sdl2.so: $(objects)
+	$(CC) -I $(tinyschemedir) -shared $(CFLAGS) -DUSE_DL=1 -o $@ $(objects) -lSDL2 -lSDL2_image -Wl,-rpath=/usr/local/lib
 	strip sdl2.so
 
 demo: demo.o $(objects)
