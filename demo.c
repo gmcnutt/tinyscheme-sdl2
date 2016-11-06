@@ -165,7 +165,7 @@ int main(int argc, char **argv)
         int done=0;
         Uint32 start_ticks, end_ticks, frames=0;
         struct args args;
-        SDL_Surface *image=NULL, *screen=NULL;
+        //SDL_Surface *image=NULL, *screen=NULL;
 
 
         parse_args(argc, argv, &args);
@@ -202,19 +202,8 @@ int main(int argc, char **argv)
 
         SDL_GetRendererInfo(renderer, &info);
         printf("Created renderer info:\n");
-        show_renderer_info(&info);
+        //show_renderer_info(&info);
 
-        /* Get the window surface for blitting. */
-        screen = SDL_GetWindowSurface(window);
-
-        /* Load an image */
-        if (args.filename) {
-                if (! (image = IMG_Load(args.filename))) {
-                        printf("IMG_Load %s: %s\n", args.filename,
-                               SDL_GetError());
-                        exit(-1);
-                }
-        }
 
         start_ticks = SDL_GetTicks();
 
@@ -233,13 +222,7 @@ int main(int argc, char **argv)
                         }
                 }
 
-                /* Render. */
-		if (image) {
-			SDL_BlitSurface(image, NULL, screen, NULL);
-			SDL_UpdateWindowSurface(window);
-		} else {
-			draw_grid(renderer);
-		}
+                draw_grid(renderer);
         }
 
         end_ticks = SDL_GetTicks();

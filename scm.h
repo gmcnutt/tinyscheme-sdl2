@@ -9,7 +9,7 @@
 
 #define scm_mk_ptr(sc, val) \
 	(sc)->vptr->mk_foreign_func((sc), (foreign_func)(val))
-#define scm_mk_integer(sc, val) (sc)->vptr->mk_integer((sc), (val))
+#define scm_mk_int(sc, val) (sc)->vptr->mk_integer((sc), (val))
 #define scm_mk_real(sc, val) (sc)->vptr->mk_real((sc), (val))
 #define scm_mk_symbol(sc, val) (sc)->vptr->mk_symbol((sc), (val))
 #define scm_mk_string(sc, val) (sc)->vptr->mk_string((sc), (val))
