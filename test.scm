@@ -17,6 +17,10 @@
 (load-extension "./sdl2")
 (sdl2-init)
 
+(load "event-handling.scm")
+(add-event-handler sdl2-quit (lambda (event) #f))
+(add-event-handler sdl2-mouse-button-down (lambda (event) #f))
+
 (with window (sdl2-create-window) sdl2-destroy-window
       (with renderer (sdl2-create-renderer window) sdl2-destroy-renderer
             (define (clear-screen)
@@ -29,7 +33,7 @@
               (sdl2-render-present renderer))
             (define (loop frames event)
               (render)
-              (cond ((equal? event sdl2-quit) frames)
+              (cond ((not (handle-event event)) frames)
                     (else (loop (+ frames 1)
                                 (sdl2-poll-event)))))
             (let ((start (sdl2-get-ticks))
