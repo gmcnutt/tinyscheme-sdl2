@@ -278,4 +278,5 @@ void init_sdl2(scheme *sc)
     scm_define_int(sc, "sdl2-alpha-opaque", SDL_ALPHA_OPAQUE);
 
     scm_define_int(sc, "sdl2-quit", SDL_QUIT);
+    scm_define_int(sc, "sdl2-mouse-button-down", SDL_MOUSEBUTTONDOWN);
 }
