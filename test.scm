@@ -17,8 +17,8 @@
 (sdl2-init)
 
 (with window (sdl2-create-window) sdl2-destroy-window
-      (println "window:" window)
       (with renderer (sdl2-create-renderer window) sdl2-destroy-renderer
-	    (println "renderer:" renderer)
+            (println "renderer:" renderer)
+            (sdl2-set-render-draw-color renderer 255 128 64 sdl2-alpha-opaque)
 	    )
       )

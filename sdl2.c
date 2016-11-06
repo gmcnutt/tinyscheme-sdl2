@@ -1,6 +1,6 @@
-#include <SDL2/SDL.h>
-#include "scm.h"
 #include "log.h"
+#include "scm.h"
+#include <SDL2/SDL.h>
 
 
 /**
@@ -23,13 +23,16 @@ static pointer sdl2_init(scheme *sc, pointer args)
 	return sc->T;
 }
 
+
 /**
  * Wrapper for SDL_CreateWindow.
  */
 static pointer sdl2_create_window(scheme *sc, pointer args)
 {
 	SDL_Window *window;
-	log_debug("sdl2_create_window:enter\n");
+
+	log_debug("%s:enter\n", __FUNCTION__);
+
 	/* Create the main window */
 	if (! (window = SDL_CreateWindow(
 		       "Demo", SDL_WINDOWPOS_UNDEFINED,
@@ -43,86 +46,71 @@ static pointer sdl2_create_window(scheme *sc, pointer args)
 	return scm_mk_ptr(sc, window);
 }
 
+
 /**
  * Wrapper for SDL_DestroyWindow.
+ *
+ * (sdl2-destroy-window window)
  */
 static pointer sdl2_destroy_window(scheme *sc, pointer args)
 {
 	SDL_Window *window=NULL;
-	pointer car=NULL;
 
 	log_debug("%s:enter\n", __FUNCTION__);
-	if (! scm_is_pair(sc, args)) {
-		log_error("%s: expected list of args\n", __FUNCTION__);
-		return sc->NIL;
+
+    if (scm_unpack(sc, &args, "p", &window)) {
+            log_error("%s: %s\n", __FUNCTION__, scm_get_error());
+            return sc->NIL;
 	}
 
-	car = scm_car(sc, args);
-
-	if (! scm_is_ptr(sc, car)) {
-		log_error("%s: not a pointer\n", __FUNCTION__);
-		return sc->NIL;
-	}
-
-	window = (SDL_Window*)scm_ptr_val(sc, car);
 	SDL_DestroyWindow(window);
 	return sc->T;
 }
 
+
 /**
  * Wrapper for SDL_CreateRenderer.
+ *
+ * (let ((renderer (sdl2-create-renderer window))) ...)
  */
 static pointer sdl2_create_renderer(scheme *sc, pointer args)
 {
 	SDL_Window *window=NULL;
 	SDL_Renderer *renderer=NULL;
-	pointer car=NULL;
 
-	log_debug("sdl2_create_renderer:enter\n");
-	if (! scm_is_pair(sc, args)) {
-		log_error("%s: expected list of args\n", __FUNCTION__);
-		return sc->NIL;
+	log_debug("%s:enter\n", __FUNCTION__);
+
+    if (scm_unpack(sc, &args, "p", &window)) {
+            log_error("%s: %s\n", __FUNCTION__, scm_get_error());
+            return sc->NIL;
 	}
-
-	car = scm_car(sc, args);
-
-	if (! scm_is_ptr(sc, car)) {
-		log_error("%s: not a pointer\n", __FUNCTION__);
-		return sc->NIL;
-	}
-
-	window = (SDL_Window*)scm_ptr_val(sc, car);
 
 	if (! (renderer = SDL_CreateRenderer(window, -1, 0))) {
 		log_error("SDL_CreateRenderer: %s\n", SDL_GetError());
 		return sc->NIL;
 	}
 
+    log_debug("%s: created %p\n", __FUNCTION__, renderer);
 	return scm_mk_ptr(sc, renderer);
 }
 
+
 /**
  * Wrapper for SDL_DestroyRenderer.
+ *
+ * (sdl2-destroy-renderer renderer)
  */
 static pointer sdl2_destroy_renderer(scheme *sc, pointer args)
 {
 	SDL_Renderer *renderer=NULL;
-	pointer car=NULL;
 
 	log_debug("%s:enter\n", __FUNCTION__);
-	if (! scm_is_pair(sc, args)) {
-		log_error("%s: expected list of args\n", __FUNCTION__);
-		return sc->NIL;
+
+    if (scm_unpack(sc, &args, "p", &renderer)) {
+            log_error("%s: %s\n", __FUNCTION__, scm_get_error());
+            return sc->NIL;
 	}
 
-	car = scm_car(sc, args);
-
-	if (! scm_is_ptr(sc, car)) {
-		log_error("%s: not a pointer\n", __FUNCTION__);
-		return sc->NIL;
-	}
-
-	renderer = (SDL_Renderer*)scm_ptr_val(sc, car);
 	SDL_DestroyRenderer(renderer);
 	return sc->T;
 
@@ -131,10 +119,34 @@ static pointer sdl2_destroy_renderer(scheme *sc, pointer args)
 
 /**
  * Wrapper for SDL_SetRenderDrawColor.
+ *
+ * (let ((red 255)
+ *       (green 128)
+ *       (blue 64)
+ *       (alpha sdl2-alpha-opaque))
+ *   (sdl2-set-render-draw-color renderer red green blue alpha)
+ *   ...
+ *   )
  */
 static pointer sdl2_set_render_draw_color(scheme *sc, pointer args)
 {
-	return sc->T;
+        SDL_Renderer *renderer=NULL;
+        int red, green, blue, alpha;
+        log_debug("%s:enter\n", __FUNCTION__);
+        if (scm_unpack(sc, &args, "pdddd", &renderer, &red, &green, &blue,
+                       &alpha)) {
+                log_error("%s: %s\n", __FUNCTION__, scm_get_error());
+                return sc->NIL;
+        }
+        log_debug("%s:%p %d %d %d %d\n", __FUNCTION__,
+                  renderer, red, green, blue, alpha);
+        if (! renderer) {
+                log_error("%s: NULL renderer\n", __FUNCTION__);
+                return sc->NIL;
+        }
+        SDL_SetRenderDrawColor(renderer, red, green, blue, alpha);
+        log_debug("%s:exit\n", __FUNCTION__);
+        return sc->NIL;
 }
 
 
@@ -158,4 +170,5 @@ void init_sdl2(scheme *sc)
 			    sdl2_destroy_renderer);
 	scm_define_api_call(sc, "sdl2-set-render-draw-color",
 			    sdl2_set_render_draw_color);
+    scm_define_int(sc, "sdl2-alpha-opaque", SDL_ALPHA_OPAQUE);
 }

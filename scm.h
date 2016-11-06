@@ -48,4 +48,37 @@
 #define scm_closure_code(sc, arg) ((sc)->vptr->closure_code(arg))
 #define scm_closure_env(sc, arg) ((sc)->vptr->closure_env(arg))
 
+/**
+ * Get the last error string.
+ */
+const char *scm_get_error(void);
+
+/**
+ * Clear the error string.
+ */
+void scm_clear_error(void);
+
+/**
+ * Unpack a scheme list of args into C type.
+ *
+ * ------------+-------------+-----------
+ * Format code | scheme type | C type 
+ * ------------+-------------+-----------
+ * b           | bool        | int
+ * c           | closure     | pointer
+ * d           | integer     | int
+ * f           | float       | float
+ * o           | procedure   | pointer
+ * p           | pointer     | void *
+ * r           | real        | float
+ * s           | string      | char *
+ * y           | symbol      | char *
+ * l           | cell        | pointer
+ * ------------+-------------+-----------
+ *
+ * Returns -1 and sets the error string on error.
+ */
+int scm_unpack(scheme * sc, pointer * cell, const char *fmt, ...);
+
+
 #endif
