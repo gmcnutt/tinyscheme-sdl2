@@ -18,7 +18,7 @@ demo: demo.o $(objects)
 	$(CC) $(CFLAGS) $< $(objects) $(LDFLAGS) -lSDL2 -lSDL2_image -o $@ -Wl,-rpath=/usr/local/lib
 
 test: $(lib) test.scm
-	tinyscheme test.scm
+	TINYSCHEMEINIT=$(tinyschemedir)/init.scm $(tinyschemedir)/scheme test.scm
 
 clean:
 	rm -f *.o $(lib)
