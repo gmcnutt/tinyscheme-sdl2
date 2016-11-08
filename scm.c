@@ -173,3 +173,66 @@ int scm_unpack(scheme * sc, pointer * cell, const char *fmt, ...)
 
         return (!*fmt && !errs) ? 0 : -1;
 }
+
+static int scm_vpack(scheme * sc, pointer *head, const char *fmt, va_list ap)
+{
+        pointer tail = sc->NIL;
+        pointer cell = sc->NIL;
+        pointer arg = sc->NIL;
+        void *ptr;
+        int ival;
+        char *strval;
+
+        *head = sc->NIL;
+
+        while (*fmt) {
+
+                switch (*fmt++) {
+                case 'p':
+                        ptr = va_arg(ap, void *);
+                        arg = scm_mk_ptr(sc, ptr);
+                        break;
+                case 'd':
+                        ival = va_arg(ap, int);
+                        arg = scm_mk_int(sc, ival);
+                        break;
+                case 'y':
+                        strval = va_arg(ap, char *);
+                        arg = scm_mk_symbol(sc, strval);
+                        break;
+                case 'l':
+                        arg = va_arg(ap, pointer);
+                        if (!arg) {
+                                arg = sc->NIL;
+                        }
+                        break;
+                default:
+                        scm_set_error("unknown format char: %c\n", *(fmt - 1));
+                        return -1;
+                }
+
+                cell = scm_cons(sc, arg, sc->NIL);
+
+                if (*head == sc->NIL) {
+                        *head = cell;
+                        tail = cell;
+                } else {
+                        tail->_object._cons._cdr = cell;
+                        tail = cell;
+                }
+        }
+
+        return 0;
+}
+
+int scm_pack(scheme * sc, pointer *head, const char *fmt, ...)
+{
+        va_list ap;
+        int result;
+
+        va_start(ap, fmt);
+        result = scm_vpack(sc, head, fmt, ap);
+        va_end(ap);
+
+        return result;
+}

@@ -39,6 +39,8 @@
 
 #define scm_car(sc, arg) ((sc)->vptr->pair_car(arg))
 #define scm_cdr(sc, arg) ((sc)->vptr->pair_cdr(arg))
+#undef cons
+#define scm_cons(sc, a, b) ((sc)->vptr->cons(sc, a, b))
 
 #define scm_str_val(sc, arg) ((sc)->vptr->string_value(arg))
 #define scm_ptr_val(sc, arg) ((void*)(arg)->_object._ff)
@@ -59,7 +61,8 @@ const char *scm_get_error(void);
 void scm_clear_error(void);
 
 /**
- * Unpack a scheme list of args into C type.
+ * Unpack a scheme list of args into C type. Returns 0 on success. Sets the
+ * error string on error.
  *
  * ------------+-------------+-----------
  * Format code | scheme type | C type 
@@ -76,9 +79,22 @@ void scm_clear_error(void);
  * l           | cell        | pointer
  * ------------+-------------+-----------
  *
- * Returns -1 and sets the error string on error.
  */
-int scm_unpack(scheme * sc, pointer * cell, const char *fmt, ...);
+int scm_unpack(scheme *sc, pointer *cell, const char *fmt, ...);
 
+/**
+ * Pack a list of C types into a scheme list starting at `head`.  Returns 0 on
+ * success. Sets the error string on error.
+ *
+ * ------------+-------------+-----------
+ * Format code | scheme type | C type 
+ * ------------+-------------+-----------
+ * d           | integer     | int
+ * p           | pointer     | void *
+ * y           | symbol      | char *
+ * l           | cell        | pointer
+ * ------------+-------------+-----------
+ */
+int scm_pack(scheme *sc, pointer *head, const char *fmt, ...);
 
 #endif
