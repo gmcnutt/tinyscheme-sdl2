@@ -14,31 +14,50 @@
 
 (define nil '())
 
+(define (for-each proc lst)
+  (cond ((not (null? lst))
+         (proc (car lst))
+         (for-each proc (cdr lst)))))
+
 (load-extension "./sdl2")
 (sdl2-init)
 
 (load "event-handling.scm")
 (add-event-handler sdl2-quit (lambda (event) #f))
-(add-event-handler sdl2-mouse-button-down (lambda (event) #f))
 
-(with window (sdl2-create-window) sdl2-destroy-window
-      (with renderer (sdl2-create-renderer window) sdl2-destroy-renderer
-            (define (clear-screen)
-              (sdl2-set-render-draw-color renderer 255 255 255 sdl2-alpha-opaque)
-              (sdl2-render-clear renderer))
-            (define (render)
-              (clear-screen)
-              (sdl2-set-render-draw-color renderer 128 128 255 sdl2-alpha-opaque)
-              (sdl2-render-draw-line renderer 0 0 100 100)
-              (sdl2-render-present renderer))
-            (define (loop frames event)
-              (render)
-              (cond ((not (handle-event event)) frames)
-                    (else (loop (+ frames 1)
-                                (sdl2-poll-event)))))
-            (let ((start (sdl2-get-ticks))
-                  (frames (loop 0 (sdl2-poll-event)))
-                  (stop (sdl2-get-ticks)))
-              (println (/ (* frames 1000) (- stop start)) " FPS"))
-	    )
-      )
+(let* ((window (sdl2-create-window))
+       (renderer (sdl2-create-renderer window))
+       (lines '((0 0 100 100)))
+       )
+  (define (clear-screen)
+    (sdl2-set-render-draw-color renderer 255 255 255 sdl2-alpha-opaque)
+    (sdl2-render-clear renderer))
+  (define (render)
+    (clear-screen)
+    (sdl2-set-render-draw-color renderer 128 128 255 sdl2-alpha-opaque)
+    (for-each (lambda (line)
+                (apply sdl2-render-draw-line (cons renderer line)))
+              lines)
+    (sdl2-render-present renderer))
+  (define (loop frames event)
+    (render)
+    (cond ((not (handle-event event)) frames)
+          (else
+           (loop (+ frames 1)
+                 (sdl2-poll-event)))))
+
+  (add-event-handler sdl2-mouse-button-down
+                     (lambda (event x y)
+                       (set-cdr! lines (cons (list 0 0 x y) (cdr lines)))
+                       #t))
+
+  ;; Start the main loop and time the FPS.
+  (let ((start (sdl2-get-ticks))
+        (frames (loop 0 (sdl2-poll-event)))
+        (stop (sdl2-get-ticks)))
+    (println (/ (* frames 1000) (- stop start)) " FPS"))
+
+  (sdl2-destroy-renderer renderer)
+  (sdl2-destroy-window window)
+  )
+
