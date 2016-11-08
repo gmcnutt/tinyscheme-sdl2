@@ -1,6 +1,7 @@
 #include "log.h"
 #include "scm.h"
 #include <SDL2/SDL.h>
+#include <SDL2/SDL_image.h>
 
 
 /**
@@ -8,19 +9,19 @@
  */
 static pointer sdl2_init(scheme *sc, pointer args)
 {
-	/* Initialize the video, event, threading and file i/o subsystems. */
-	if (SDL_Init(SDL_INIT_VIDEO)) {
-		log_critical("SDL_Init: %s\n", SDL_GetError());
-		return sc->NIL;
-	}
+        /* Initialize the video, event, threading and file i/o subsystems. */
+        if (SDL_Init(SDL_INIT_VIDEO)) {
+                log_critical("SDL_Init: %s\n", SDL_GetError());
+                return sc->NIL;
+        }
 
-	/* Cleanup SDL on exit. */
-	atexit(SDL_Quit);
+        /* Cleanup SDL on exit. */
+        atexit(SDL_Quit);
 
-	/* Set logging level. */
-	log_init();
+        /* Set logging level. */
+        log_init();
 
-	return sc->T;
+        return sc->T;
 }
 
 
@@ -29,20 +30,20 @@ static pointer sdl2_init(scheme *sc, pointer args)
  */
 static pointer sdl2_create_window(scheme *sc, pointer args)
 {
-	SDL_Window *window;
+        SDL_Window *window;
 
-	/* Create the main window */
-	if (! (window = SDL_CreateWindow(
-		       "Demo", SDL_WINDOWPOS_UNDEFINED,
-		       SDL_WINDOWPOS_UNDEFINED, 640, 480,
-		       SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN))) {
-		log_error("SDL_CreateWindow: %s\n", SDL_GetError());
-		return sc->NIL;
-	}
+        /* Create the main window */
+        if (! (window = SDL_CreateWindow(
+                       "Demo", SDL_WINDOWPOS_UNDEFINED,
+                       SDL_WINDOWPOS_UNDEFINED, 640, 480,
+                       SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN))) {
+                log_error("SDL_CreateWindow: %s\n", SDL_GetError());
+                return sc->NIL;
+        }
 
-	/* Return the window as a foreign pointer. */
-    log_debug("%s:%p\n", __FUNCTION__, window);
-	return scm_mk_ptr(sc, window);
+        /* Return the window as a foreign pointer. */
+        log_debug("%s:%p\n", __FUNCTION__, window);
+        return scm_mk_ptr(sc, window);
 }
 
 
@@ -53,16 +54,16 @@ static pointer sdl2_create_window(scheme *sc, pointer args)
  */
 static pointer sdl2_destroy_window(scheme *sc, pointer args)
 {
-	SDL_Window *window=NULL;
+        SDL_Window *window=NULL;
 
-    if (scm_unpack(sc, &args, "p", &window)) {
-            log_error("%s: %s\n", __FUNCTION__, scm_get_error());
-            return sc->NIL;
-	}
+        if (scm_unpack(sc, &args, "p", &window)) {
+                log_error("%s: %s\n", __FUNCTION__, scm_get_error());
+                return sc->NIL;
+        }
 
-    log_debug("%s:%p\n", __FUNCTION__, window);
-	SDL_DestroyWindow(window);
-	return sc->T;
+        log_debug("%s:%p\n", __FUNCTION__, window);
+        SDL_DestroyWindow(window);
+        return sc->T;
 }
 
 
@@ -73,21 +74,21 @@ static pointer sdl2_destroy_window(scheme *sc, pointer args)
  */
 static pointer sdl2_create_renderer(scheme *sc, pointer args)
 {
-	SDL_Window *window=NULL;
-	SDL_Renderer *renderer=NULL;
+        SDL_Window *window=NULL;
+        SDL_Renderer *renderer=NULL;
 
-    if (scm_unpack(sc, &args, "p", &window)) {
-            log_error("%s: %s\n", __FUNCTION__, scm_get_error());
-            return sc->NIL;
-	}
+        if (scm_unpack(sc, &args, "p", &window)) {
+                log_error("%s: %s\n", __FUNCTION__, scm_get_error());
+                return sc->NIL;
+        }
 
-	if (! (renderer = SDL_CreateRenderer(window, -1, 0))) {
-		log_error("SDL_CreateRenderer: %s\n", SDL_GetError());
-		return sc->NIL;
-	}
+        if (! (renderer = SDL_CreateRenderer(window, -1, 0))) {
+                log_error("SDL_CreateRenderer: %s\n", SDL_GetError());
+                return sc->NIL;
+        }
 
-    log_debug("%s:%p\n", __FUNCTION__, renderer);
-	return scm_mk_ptr(sc, renderer);
+        log_debug("%s:%p\n", __FUNCTION__, renderer);
+        return scm_mk_ptr(sc, renderer);
 }
 
 
@@ -98,17 +99,17 @@ static pointer sdl2_create_renderer(scheme *sc, pointer args)
  */
 static pointer sdl2_destroy_renderer(scheme *sc, pointer args)
 {
-	SDL_Renderer *renderer=NULL;
+        SDL_Renderer *renderer=NULL;
 
-    if (scm_unpack(sc, &args, "p", &renderer)) {
-            log_error("%s: %s\n", __FUNCTION__, scm_get_error());
-            return sc->NIL;
-	}
+        if (scm_unpack(sc, &args, "p", &renderer)) {
+                log_error("%s: %s\n", __FUNCTION__, scm_get_error());
+                return sc->NIL;
+        }
 
-	log_debug("%s:%p\n", __FUNCTION__, renderer);
+        log_debug("%s:%p\n", __FUNCTION__, renderer);
 
-	SDL_DestroyRenderer(renderer);
-	return sc->T;
+        SDL_DestroyRenderer(renderer);
+        return sc->T;
 
 }
 
@@ -148,15 +149,15 @@ static pointer sdl2_set_render_draw_color(scheme *sc, pointer args)
  */
 static pointer sdl2_render_clear(scheme *sc, pointer args)
 {
-	SDL_Renderer *renderer=NULL;
+        SDL_Renderer *renderer=NULL;
 
-    if (scm_unpack(sc, &args, "p", &renderer)) {
-            log_error("%s: %s\n", __FUNCTION__, scm_get_error());
-            return sc->NIL;
-	}
+        if (scm_unpack(sc, &args, "p", &renderer)) {
+                log_error("%s: %s\n", __FUNCTION__, scm_get_error());
+                return sc->NIL;
+        }
 
-	SDL_RenderClear(renderer);
-	return sc->T;
+        SDL_RenderClear(renderer);
+        return sc->T;
 }
 
 
@@ -195,15 +196,15 @@ static pointer sdl2_render_draw_line(scheme *sc, pointer args)
  */
 static pointer sdl2_render_present(scheme *sc, pointer args)
 {
-	SDL_Renderer *renderer=NULL;
+        SDL_Renderer *renderer=NULL;
 
-    if (scm_unpack(sc, &args, "p", &renderer)) {
-            log_error("%s: %s\n", __FUNCTION__, scm_get_error());
-            return sc->NIL;
-	}
+        if (scm_unpack(sc, &args, "p", &renderer)) {
+                log_error("%s: %s\n", __FUNCTION__, scm_get_error());
+                return sc->NIL;
+        }
 
-	SDL_RenderPresent(renderer);
-	return sc->T;
+        SDL_RenderPresent(renderer);
+        return sc->T;
 }
 
 
@@ -269,6 +270,71 @@ static pointer sdl2_get_ticks(scheme *sc, pointer args)
         return scm_mk_int(sc, SDL_GetTicks());
 }
 
+
+/**
+ * Wrapper that combines IMG_Load with SDL_CreateTextureFromSurface.
+ *
+ * (sdl2-load-texture renderer "picture.png")
+ */
+static pointer sdl2_load_texture(scheme *sc, pointer args)
+{
+        SDL_Renderer *renderer=NULL;
+        SDL_Surface *surface=NULL;
+        SDL_Texture *texture=NULL;
+        char *filename = NULL;
+        pointer result = sc->NIL;
+
+        if (scm_unpack(sc, &args, "ps", &renderer, &filename)) {
+                log_error("%s:%s\n", __FUNCTION__, scm_get_error());
+                return sc->NIL;
+        }
+
+        if (! renderer) {
+                log_error("%s: NULL renderer\n", __FUNCTION__);
+                return sc->NIL;
+        }
+
+        if (! filename) {
+                log_error("%s: NULL filename\n", __FUNCTION__);
+                return sc->NIL;
+        }
+
+        if (! (surface = IMG_Load(filename))) {
+                log_error("%s:%s\n", __FUNCTION__, SDL_GetError());
+                return sc->NIL;
+        }
+
+        if (! (texture = SDL_CreateTextureFromSurface(renderer, surface))) {
+                log_error("%s:%s\n", __FUNCTION__, SDL_GetError());
+                goto free_surface;
+        }
+
+        log_debug("%s:%p\n", __FUNCTION__, texture);
+        result = scm_mk_ptr(sc, texture);
+
+free_surface:
+        SDL_FreeSurface(surface);
+        return result;
+}
+
+
+/**
+ * Wrapper for SDL_DestroyTexture.
+ */
+static pointer sdl2_destroy_texture(scheme *sc, pointer args)
+{
+        SDL_Texture *texture=NULL;
+
+        if (scm_unpack(sc, &args, "p", &texture)) {
+                log_error("%s: %s\n", __FUNCTION__, scm_get_error());
+                return sc->NIL;
+        }
+
+        log_debug("%s:%p\n", __FUNCTION__, texture);
+        SDL_DestroyTexture(texture);
+        return sc->T;
+}
+
 /**
  * Initialize this dynamic extension.
  *
@@ -280,22 +346,21 @@ static pointer sdl2_get_ticks(scheme *sc, pointer args)
  */
 void init_sdl2(scheme *sc)
 {
-	scm_define_api_call(sc, "sdl2-init", sdl2_init);
-
-	scm_define_api_call(sc, "sdl2-create-renderer", sdl2_create_renderer);
-	scm_define_api_call(sc, "sdl2-create-window", sdl2_create_window);
-	scm_define_api_call(sc, "sdl2-destroy-renderer", sdl2_destroy_renderer);
-	scm_define_api_call(sc, "sdl2-destroy-window", sdl2_destroy_window);
-	scm_define_api_call(sc, "sdl2-render-draw-line", sdl2_render_draw_line);
-	scm_define_api_call(sc, "sdl2-set-render-draw-color", sdl2_set_render_draw_color);
-    scm_define_api_call(sc, "sdl2-poll-event", sdl2_poll_event);
-    scm_define_api_call(sc, "sdl2-render-clear", sdl2_render_clear);
-    scm_define_api_call(sc, "sdl2-render-present", sdl2_render_present);
-    scm_define_api_call(sc, "sdl2-delay", sdl2_delay);
-    scm_define_api_call(sc, "sdl2-get-ticks", sdl2_get_ticks);
-
-    scm_define_int(sc, "sdl2-alpha-opaque", SDL_ALPHA_OPAQUE);
-
-    scm_define_int(sc, "sdl2-quit", SDL_QUIT);
-    scm_define_int(sc, "sdl2-mouse-button-down", SDL_MOUSEBUTTONDOWN);
+        scm_define_api_call(sc, "sdl2-create-renderer", sdl2_create_renderer);
+        scm_define_api_call(sc, "sdl2-create-window", sdl2_create_window);
+        scm_define_api_call(sc, "sdl2-delay", sdl2_delay);
+        scm_define_api_call(sc, "sdl2-destroy-renderer", sdl2_destroy_renderer);
+        scm_define_api_call(sc, "sdl2-destroy-texture", sdl2_destroy_texture);
+        scm_define_api_call(sc, "sdl2-destroy-window", sdl2_destroy_window);
+        scm_define_api_call(sc, "sdl2-get-ticks", sdl2_get_ticks);
+        scm_define_api_call(sc, "sdl2-init", sdl2_init);
+        scm_define_api_call(sc, "sdl2-load-texture", sdl2_load_texture);
+        scm_define_api_call(sc, "sdl2-poll-event", sdl2_poll_event);
+        scm_define_api_call(sc, "sdl2-render-clear", sdl2_render_clear);
+        scm_define_api_call(sc, "sdl2-render-draw-line", sdl2_render_draw_line);
+        scm_define_api_call(sc, "sdl2-render-present", sdl2_render_present);
+        scm_define_api_call(sc, "sdl2-set-render-draw-color", sdl2_set_render_draw_color);
+        scm_define_int(sc, "sdl2-alpha-opaque", SDL_ALPHA_OPAQUE);
+        scm_define_int(sc, "sdl2-mouse-button-down", SDL_MOUSEBUTTONDOWN);
+        scm_define_int(sc, "sdl2-quit", SDL_QUIT);
 }

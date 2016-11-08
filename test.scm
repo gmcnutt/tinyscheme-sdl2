@@ -28,6 +28,9 @@
 (let* ((window (sdl2-create-window))
        (renderer (sdl2-create-renderer window))
        (lines '((0 0 100 100)))
+       (texture (sdl2-load-texture
+                 renderer
+                 "/home/gmcnutt/Dropbox/projects/art/u6_tileset.png"))
        )
   (define (clear-screen)
     (sdl2-set-render-draw-color renderer 255 255 255 sdl2-alpha-opaque)
@@ -57,6 +60,7 @@
         (stop (sdl2-get-ticks)))
     (println (/ (* frames 1000) (- stop start)) " FPS"))
 
+  (sdl2-destroy-texture texture)
   (sdl2-destroy-renderer renderer)
   (sdl2-destroy-window window)
   )
