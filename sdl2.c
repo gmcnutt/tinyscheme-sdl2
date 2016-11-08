@@ -208,19 +208,38 @@ static pointer sdl2_render_present(scheme *sc, pointer args)
 
 
 /**
- * Wrapper for SDL_PollEvent.
+ * Wrapper for SDL_PollEvent. Returns a list where the first element is the
+ * event type and the remaining elements depend on the type.
  *
  * (let ((event (sdl2-poll-event))) ...)
+ *
+ * Return details:
+ *   default: '(<type>)
+ *   Mouse button down: '(<type> <x> <y>)
  */
 static pointer sdl2_poll_event(scheme *sc, pointer args)
 {
         SDL_Event event;
+        pointer head = sc->NIL;
 
         if (! SDL_PollEvent(&event)) {
-                return sc->NIL;
+                return head;
         }
 
-        return scm_mk_int(sc, event.type);
+        switch (event.type) {
+        case SDL_MOUSEBUTTONDOWN:
+                if (scm_pack(sc, &head, "ddd", event.type, event.button.x,
+                             event.button.y)) {
+                        log_error("%s: %s\n", __FUNCTION__, scm_get_error());
+                        head = sc->NIL;
+                }
+                break;
+        default:
+                head = scm_cons(sc, scm_mk_int(sc, event.type), sc->NIL);
+                break;
+        }
+
+        return head;
 }
 
 
