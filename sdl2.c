@@ -5,6 +5,16 @@
 
 
 /**
+ * Unpack an SDL_Rect.
+ */
+static inline int _scm_unpack_rect(scheme *sc, pointer *args, SDL_Rect *rect)
+{
+        return scm_unpack(
+                sc, args, "dddd", &rect->x, &rect->y, &rect->w, &rect->h);
+}
+
+
+/**
  * Initialize the SDL2 subsystem.
  */
 static pointer sdl2_init(scheme *sc, pointer args)
@@ -335,6 +345,63 @@ static pointer sdl2_destroy_texture(scheme *sc, pointer args)
         return sc->T;
 }
 
+
+/**
+ * Wrapper for SDL_RenderCopy.
+ *
+ * (sdl2-render-copy renderer texture srcrect dstrect)
+ *
+ * Where `srcrect` and `dstrect` are nil or lists of 4 non-negative
+ * integers.
+ */
+static pointer sdl2_render_copy(scheme *sc, pointer args)
+{
+        SDL_Renderer *renderer=NULL;
+        SDL_Texture *texture=NULL;
+        pointer slist, dlist;
+        SDL_Rect src, dst;
+        SDL_Rect *psrc=NULL, *pdst=NULL;
+
+        if (scm_unpack(sc, &args, "ppll", &renderer, &texture, &slist,
+                       &dlist)) {
+                log_error("%s:%s\n", __FUNCTION__, scm_get_error());
+                return sc->NIL;
+        }
+
+        if (! renderer) {
+                log_error("%s: NULL renderer\n", __FUNCTION__);
+                return sc->NIL;
+        }
+
+        if (! texture) {
+                log_error("%s: NULL texture\n", __FUNCTION__);
+                return sc->NIL;
+        }
+
+        if (slist != sc->NIL) {
+                if (_scm_unpack_rect(sc, &slist, &src)) {
+                        log_error("%s:source:%s\n", __FUNCTION__, scm_get_error());
+                        return sc->NIL;
+                }
+                psrc = &src;
+        }
+
+        if (dlist != sc->NIL) {
+                if (_scm_unpack_rect(sc, &dlist, &dst)) {
+                        log_error("%s:source:%s\n", __FUNCTION__, scm_get_error());
+                        return sc->NIL;
+                }
+                pdst = &dst;
+        }
+
+        if (SDL_RenderCopy(renderer, texture, psrc, pdst)) {
+                log_error("%s:SDL_RenderCopy:%s\n", __FUNCTION__, SDL_GetError());
+                return sc->NIL;
+        }
+        return sc->T;
+}
+
+
 /**
  * Initialize this dynamic extension.
  *
@@ -360,6 +427,7 @@ void init_sdl2(scheme *sc)
         scm_define_api_call(sc, "sdl2-render-draw-line", sdl2_render_draw_line);
         scm_define_api_call(sc, "sdl2-render-present", sdl2_render_present);
         scm_define_api_call(sc, "sdl2-set-render-draw-color", sdl2_set_render_draw_color);
+        scm_define_api_call(sc, "sdl2-render-copy", sdl2_render_copy);
         scm_define_int(sc, "sdl2-alpha-opaque", SDL_ALPHA_OPAQUE);
         scm_define_int(sc, "sdl2-mouse-button-down", SDL_MOUSEBUTTONDOWN);
         scm_define_int(sc, "sdl2-quit", SDL_QUIT);

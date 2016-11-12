@@ -28,8 +28,7 @@
 (let* ((window (sdl2-create-window))
        (renderer (sdl2-create-renderer window))
        (lines '((0 0 100 100)))
-       (texture (sdl2-load-texture
-                 renderer
+       (texture (sdl2-load-texture renderer
                  "/home/gmcnutt/Dropbox/projects/art/u6_tileset.png"))
        )
   (define (clear-screen)
@@ -37,6 +36,7 @@
     (sdl2-render-clear renderer))
   (define (render)
     (clear-screen)
+    (sdl2-render-copy renderer texture '(400 880 16 16) '(0 0 16 16))
     (sdl2-set-render-draw-color renderer 128 128 255 sdl2-alpha-opaque)
     (for-each (lambda (line)
                 (apply sdl2-render-draw-line (cons renderer line)))
