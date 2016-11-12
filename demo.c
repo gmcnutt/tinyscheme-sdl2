@@ -47,16 +47,6 @@ static void print_usage(void)
 }
 
 
-static void draw_grid(SDL_Renderer *renderer)
-{
-	SDL_SetRenderDrawColor(renderer, 0xff, 0xff, 0xff, SDL_ALPHA_OPAQUE);
-	SDL_RenderClear(renderer);
-	SDL_SetRenderDrawColor(renderer, 0x10, 0xf0, 0xf0, SDL_ALPHA_OPAQUE);
-	SDL_RenderDrawLine(renderer, 0, 0, 200, 200);
-	SDL_RenderPresent(renderer);
-}
-
-
 /**
  * Parse command-line args.
  */
@@ -156,16 +146,88 @@ static void show_driver_info(void)
         }
 }
 
+#define TILE_WIDTH 64
+#define TILE_HEIGHT 32
+#define TILE_WIDTH_HALF (TILE_WIDTH / 2)
+#define TILE_HEIGHT_HALF (TILE_HEIGHT / 2)
+
+static void clear_screen(SDL_Renderer *renderer)
+{
+        SDL_SetRenderDrawColor(renderer, 255, 255, 255, SDL_ALPHA_OPAQUE);
+        SDL_RenderClear(renderer);
+}
+
+static int screen_x(int map_x, int map_y)
+{
+        return (map_x - map_y) * TILE_WIDTH_HALF;
+}
+
+static int screen_y(int map_x, int map_y)
+{
+        return (map_x + map_y) * TILE_HEIGHT_HALF;
+}
+
+static void render_iso_test(SDL_Renderer *renderer, SDL_Texture *texture,
+                            int off_x, int off_y, int map_w, int map_h)
+{
+        int row, col, map_x;
+        SDL_Rect src, dst;
+
+        src.x = 0;
+        src.y = 32;
+        src.w = TILE_WIDTH;
+        src.h = TILE_HEIGHT;
+
+        dst.w = TILE_WIDTH;
+        dst.h = TILE_HEIGHT;
+
+        map_x = screen_x(map_h - 1, 0);
+
+        for (row = 0; row < map_h; row++) {
+                for (col = 0; col < map_w; col++) {
+                        dst.x = screen_x(col, row) + map_x;
+                        dst.y = screen_y(col, row);
+                        SDL_RenderCopy(renderer, texture, &src, &dst);
+                }
+        }
+}
+
+static void render(SDL_Renderer *renderer, SDL_Texture *texture)
+{
+        clear_screen(renderer);
+        render_iso_test(renderer, texture, 0, 0, 4, 4);
+        SDL_RenderPresent(renderer);
+}
+
+static SDL_Texture *load_texture(SDL_Renderer *renderer, const char *filename)
+{
+        SDL_Surface *surface = NULL;
+        SDL_Texture *texture = NULL;
+
+        if (! (surface = IMG_Load(filename))) {
+                printf("%s:IMG_Load:%s\n", __FUNCTION__, SDL_GetError());
+                return NULL;
+        }
+
+        if (! (texture = SDL_CreateTextureFromSurface(renderer, surface))) {
+                printf("%s:SDL_CreateTextureFromSurface:%s\n",
+                       __FUNCTION__, SDL_GetError());
+        }
+
+        SDL_FreeSurface(surface);
+
+        return texture;
+}
+
 int main(int argc, char **argv)
 {
         SDL_Event event;
         SDL_Window *window=NULL;
         SDL_Renderer *renderer=NULL;
-        SDL_RendererInfo info;
+        SDL_Texture *texture=NULL;
         int done=0;
         Uint32 start_ticks, end_ticks, frames=0;
         struct args args;
-        //SDL_Surface *image=NULL, *screen=NULL;
 
 
         parse_args(argc, argv, &args);
@@ -200,10 +262,12 @@ int main(int argc, char **argv)
                 goto destroy_window;
         }
 
-        SDL_GetRendererInfo(renderer, &info);
-        printf("Created renderer info:\n");
-        //show_renderer_info(&info);
-
+        /* Load the texture image */
+        if (! (texture = load_texture(
+                       renderer,
+                       "/home/gmcnutt/Dropbox/projects/art/iso-64x64-outside.png"))) {
+                goto destroy_renderer;
+        }
 
         start_ticks = SDL_GetTicks();
 
@@ -222,7 +286,7 @@ int main(int argc, char **argv)
                         }
                 }
 
-                draw_grid(renderer);
+                render(renderer, texture);
         }
 
         end_ticks = SDL_GetTicks();
@@ -232,6 +296,8 @@ int main(int argc, char **argv)
                         );
         }
 
+        SDL_DestroyTexture(texture);
+destroy_renderer:
         SDL_DestroyRenderer(renderer);
 destroy_window:
         SDL_DestroyWindow(window);

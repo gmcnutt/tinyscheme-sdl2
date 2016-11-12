@@ -310,12 +310,13 @@ static pointer sdl2_load_texture(scheme *sc, pointer args)
         }
 
         if (! (surface = IMG_Load(filename))) {
-                log_error("%s:%s\n", __FUNCTION__, SDL_GetError());
+                log_error("%s:IMG_Load:%s\n", __FUNCTION__, SDL_GetError());
                 return sc->NIL;
         }
 
         if (! (texture = SDL_CreateTextureFromSurface(renderer, surface))) {
-                log_error("%s:%s\n", __FUNCTION__, SDL_GetError());
+                log_error("%s:SDL_CreateTextureFromSurface:%s\n",
+                          __FUNCTION__, SDL_GetError());
                 goto free_surface;
         }
 
