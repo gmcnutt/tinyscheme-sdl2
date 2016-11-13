@@ -195,7 +195,7 @@ static void render_iso_test(SDL_Renderer *renderer, SDL_Texture *texture,
 static void render(SDL_Renderer *renderer, SDL_Texture *texture)
 {
         clear_screen(renderer);
-        render_iso_test(renderer, texture, 0, 0, 4, 4);
+        render_iso_test(renderer, texture, 0, 0, 10, 10);
         SDL_RenderPresent(renderer);
 }
 

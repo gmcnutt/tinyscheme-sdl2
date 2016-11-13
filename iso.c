@@ -36,9 +36,9 @@ static int screen_y(int map_x, int map_y)
 /**
  * Blit a texture to an iso grid.
  *
- * (hax-blit renderer texture textsrc mapx mapy)
+ * (iso-blit renderer texture textsrc mapx mapy)
  */
-static pointer hax_blit(scheme *sc, pointer args)
+static pointer iso_blit(scheme *sc, pointer args)
 {
         SDL_Rect screen_dst;
         SDL_Rect src, *psrc=NULL;
@@ -74,9 +74,9 @@ static pointer hax_blit(scheme *sc, pointer args)
 /**
  * Fill an iso grid with a texture.
  *
- * (hax-fill renderer texture textsrc mapdst)
+ * (iso-fill renderer texture textsrc mapdst)
  */
-static pointer hax_fill(scheme *sc, pointer args)
+static pointer iso_fill(scheme *sc, pointer args)
 {
         SDL_Rect screen_dst;
         SDL_Rect src, map, *psrc=NULL;
@@ -122,8 +122,40 @@ static pointer hax_fill(scheme *sc, pointer args)
         return sc->NIL;
 }
 
-void init_hax(scheme *sc)
+/**
+ * Render isometrict grid lines.
+ *
+ * (iso-grid renderer width height)
+ */
+static pointer iso_grid(scheme *sc, pointer args)
 {
-        scm_define_api_call(sc, "hax-blit", hax_blit);
-        scm_define_api_call(sc, "hax-fill", hax_fill);
+        int row, col, width, height, offx;
+        SDL_Renderer *renderer;
+
+        if (scm_unpack(sc, &args, "pdd", &renderer, &width, &height)) {
+                log_error("%s:%s\n", __FUNCTION__, scm_get_error());
+                return sc->NIL;
+        }
+
+        offx = screen_x(height, 0);
+        for (row = 0; row <= height; row++) {
+                SDL_RenderDrawLine(
+                        renderer,
+                        offx + screen_x(0, row),     screen_y(0, row),
+                        offx + screen_x(width, row), screen_y(width, row));
+        }
+        for (col = 0; col <= width; col++) {
+                SDL_RenderDrawLine(
+                        renderer,
+                        offx + screen_x(col, 0),      screen_y(col, 0),
+                        offx + screen_x(col, height), screen_y(col, height));
+        }
+        return sc->NIL;
+}
+
+void init_iso(scheme *sc)
+{
+        scm_define_api_call(sc, "iso-blit", iso_blit);
+        scm_define_api_call(sc, "iso-fill", iso_fill);
+        scm_define_api_call(sc, "iso-grid", iso_grid);
 }
