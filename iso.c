@@ -1,7 +1,14 @@
+/**
+ * Tinyscheme extension with isometric blit functions.
+ *
+ * Can be used freely together with the tinyscheme-sdl2 extension.
+ */
+
 #include "log.h"
 #include "scm.h"
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
+
 
 #define MAP_HEIGHT 10
 #define MAP_WIDTH 10
@@ -64,9 +71,10 @@ static pointer iso_blit(scheme *sc, pointer args)
         }
 
         screen_dst.x = screen_x(map_x, map_y) + screen_x(MAP_HEIGHT - 1, 0);
-        screen_dst.y = screen_y(map_x, map_y);
-        screen_dst.w = TILE_WIDTH;
-        screen_dst.h = TILE_HEIGHT;
+        screen_dst.y = screen_y(map_x, map_y) - (src.h - TILE_HEIGHT);
+
+        screen_dst.w = src.w;
+        screen_dst.h = src.h;
         SDL_RenderCopy(renderer, texture, psrc, &screen_dst);
         return sc->NIL;
 }

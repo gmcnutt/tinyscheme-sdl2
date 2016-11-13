@@ -61,6 +61,7 @@
       (define (screen-y mapx mapy)
         (+ off_y (* (+ mapx mapy) tile_h_half)))
       (iso-fill renderer texture '(0 32 64 32) '(0 0 10 10))
+      (iso-blit renderer texture (list (* 4 64) (* 7 64) 64 64) 5 5)
       (sdl2-set-render-draw-color renderer 64 32 64 sdl2-alpha-opaque)
       (iso-grid renderer 10 10)
       ))
