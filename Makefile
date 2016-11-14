@@ -5,9 +5,14 @@ CFLAGS += -Werror -Wfatal-errors
 CFLAGS += -std=c99
 CFLAGS += -I $(tinyschemedir) -DUSE_DL=1
 CFLAGS += -fPIC
-CFLAGS += -Wall -g
 sdl2lib := ts_sdl2.so
 isolib := ts_iso.so
+
+ifeq ($(OPTIMIZE), true)
+	CFLAGS += -O3
+else
+	CFLAGS += -Wall -g
+endif
 
 all: $(sdl2lib) $(isolib)
 

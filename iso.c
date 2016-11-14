@@ -111,11 +111,13 @@ int iso_screen_to_map(int screen_x, int screen_y, int *map_x, int *map_y)
         off_x = map_to_screen_x(MAP_HEIGHT, 0);
         screen_x -= off_x;
         *map_x = screen_to_map_x(screen_x, screen_y);
+        *map_y = screen_to_map_y(screen_x, screen_y);
+
         if (*map_x < 0 || *map_x > MAP_WIDTH) {
                 log_debug("%s:map_x=%d off-map\n", __FUNCTION__, *map_x);
                 return -1;
         }
-        *map_y = screen_to_map_y(screen_x, screen_y);
+
         if (*map_y < 0 || *map_y > MAP_HEIGHT) {
                 log_debug("%s:*map_y=%d off-map\n", __FUNCTION__, *map_y);
                 return -1;
