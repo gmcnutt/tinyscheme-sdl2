@@ -76,7 +76,6 @@
   (add-event-handler sdl2-mouse-button-down
                      (lambda (event x y)
                        (let ((loc (iso-screen-to-map x y)))
-                         (println x "," y "->" loc)
                          (if (not (null? loc))
                              (set-cdr! rocks
                                        (insert-sorted (cdr rocks)
