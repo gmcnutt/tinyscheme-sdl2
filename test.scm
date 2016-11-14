@@ -19,6 +19,12 @@
          (proc (car lst))
          (for-each proc (cdr lst)))))
 
+(define (insert-sorted lst before? elem)
+  (cond ((null? lst) (cons elem lst))
+        ((before? elem (car lst)) (cons elem lst))
+        (else
+         (cons (car lst) (insert-sorted (cdr lst) before? elem)))))
+
 (load-extension "./ts_sdl2")
 (sdl2-init)
 
@@ -33,7 +39,7 @@
 
 (let* ((window (sdl2-create-window))
        (renderer (sdl2-create-renderer window))
-       (rocks '((1 . 1)))
+       (rocks '(rocks . ()))
        (texture (sdl2-load-texture renderer
                  "/home/gmcnutt/Dropbox/projects/art/iso-64x64-outside.png"))
        )
@@ -51,7 +57,7 @@
       (for-each (lambda (loc)
                   (iso-blit renderer texture
                             (list (* 4 64) (* 7 64) 64 64) (car loc) (cdr loc)))
-                rocks)
+                (cdr rocks))
       (sdl2-set-render-draw-color renderer 64 32 64 sdl2-alpha-opaque)
       (iso-grid renderer map_w map_h)
       ))
@@ -72,7 +78,13 @@
                        (let ((loc (iso-screen-to-map x y)))
                          (println x "," y "->" loc)
                          (if (not (null? loc))
-                             (set-cdr! rocks (cons loc (cdr rocks)))))
+                             (set-cdr! rocks
+                                       (insert-sorted (cdr rocks)
+                                                      (lambda (a b)
+                                                        (or (< (car a) (car b))
+                                                            (< (cdr a) (cdr b)))
+                                                        )
+                                                      loc))))
                        #t))
 
   ;; Start the main loop and time the FPS.
