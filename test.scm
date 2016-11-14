@@ -27,32 +27,19 @@
 (load "event-handling.scm")
 (add-event-handler sdl2-quit (lambda (event) #f))
 
+(define (screen-to-map x y)
+  (cons (/ (+ (/ x 32) (/ y 16)) 2)
+        (/ (- (/ y 16) (/ x 32)) 2)))
+
 (let* ((window (sdl2-create-window))
        (renderer (sdl2-create-renderer window))
-       (lines '((0 0 100 100)))
+       (rocks '((1 . 1)))
        (texture (sdl2-load-texture renderer
                  "/home/gmcnutt/Dropbox/projects/art/iso-64x64-outside.png"))
        )
   (define (clear-screen)
     (sdl2-set-render-draw-color renderer 255 255 255 sdl2-alpha-opaque)
     (sdl2-render-clear renderer))
-  (define (draw-square-grid off_x off_y w h tile_w tile_h)
-    (sdl2-set-render-draw-color renderer 128 128 255 sdl2-alpha-opaque)
-    (define (screen-x mapx) (+ off_x (* mapx tile_w)))
-    (define (screen-y mapy) (+ off_y (* mapy tile_h)))
-    (define (draw-rows n)
-      (sdl2-render-draw-line renderer
-                             (screen-x 0) (screen-y n)
-                             (screen-x w) (screen-y n))
-      (if (> n 0) (draw-rows (- n 1))))
-    (define (draw-cols n)
-      (sdl2-render-draw-line renderer
-                             (screen-x n) (screen-y 0)
-                             (screen-x n) (screen-y h))
-      (if (> n 0) (draw-cols (- n 1))))
-    (draw-rows h)
-    (draw-cols w)
-    )
   (define (render-iso-test off_x off_y map_w map_h tile_w tile_h)
     (let ((tile_w_half (/ tile_w 2))
           (tile_h_half (/ tile_h 2)))
@@ -60,10 +47,13 @@
         (+ off_x (* (- mapx mapy) tile_w_half)))
       (define (screen-y mapx mapy)
         (+ off_y (* (+ mapx mapy) tile_h_half)))
-      (iso-fill renderer texture '(0 32 64 32) '(0 0 10 10))
-      (iso-blit renderer texture (list (* 4 64) (* 7 64) 64 64) 5 5)
+      (iso-fill renderer texture '(0 32 64 32) (list 0 0 map_w map_h))
+      (for-each (lambda (loc)
+                  (iso-blit renderer texture
+                            (list (* 4 64) (* 7 64) 64 64) (car loc) (cdr loc)))
+                rocks)
       (sdl2-set-render-draw-color renderer 64 32 64 sdl2-alpha-opaque)
-      (iso-grid renderer 10 10)
+      (iso-grid renderer map_w map_h)
       ))
   (define (render)
     (clear-screen)
@@ -79,7 +69,10 @@
 
   (add-event-handler sdl2-mouse-button-down
                      (lambda (event x y)
-                       (set-cdr! lines (cons (list 0 0 x y) (cdr lines)))
+                       (let ((loc (iso-screen-to-map x y)))
+                         (println x "," y "->" loc)
+                         (if (not (null? loc))
+                             (set-cdr! rocks (cons loc (cdr rocks)))))
                        #t))
 
   ;; Start the main loop and time the FPS.
