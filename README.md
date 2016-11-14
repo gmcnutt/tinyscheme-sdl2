@@ -10,4 +10,7 @@ tinyscheme:
 * https://sourceforge.net/projects/tinyscheme/files/latest/download
 
 Edit Makefile to point `tinyschemedir` to wherever you installed it.
+
 Run `make test`.
+
+(Or, to try optimized, `make test OPTIMIZE=true`.)

@@ -9,7 +9,7 @@ sdl2lib := ts_sdl2.so
 isolib := ts_iso.so
 
 ifeq ($(OPTIMIZE), true)
-	CFLAGS += -O3
+	CFLAGS += -O2
 else
 	CFLAGS += -Wall -g
 endif
