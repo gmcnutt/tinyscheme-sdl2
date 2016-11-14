@@ -19,10 +19,10 @@
          (proc (car lst))
          (for-each proc (cdr lst)))))
 
-(load-extension "./sdl2")
+(load-extension "./ts_sdl2")
 (sdl2-init)
 
-(load-extension "./iso")
+(load-extension "./ts_iso")
 
 (load "event-handling.scm")
 (add-event-handler sdl2-quit (lambda (event) #f))

@@ -1,4 +1,4 @@
-sources := log.c sdl2.c scm.c iso.c
+sources := log.c ts_sdl2.c scm.c iso.c ts_iso.c
 objects = $(sources:.c=.o)
 tinyschemedir := $(HOME)/src/tinyscheme-1.41
 CFLAGS += -Werror -Wfatal-errors
@@ -6,8 +6,8 @@ CFLAGS += -std=c99
 CFLAGS += -I $(tinyschemedir) -DUSE_DL=1
 CFLAGS += -fPIC
 CFLAGS += -Wall -g
-sdl2lib := sdl2.so
-isolib := iso.so
+sdl2lib := ts_sdl2.so
+isolib := ts_iso.so
 
 all: $(sdl2lib) $(isolib)
 
@@ -25,4 +25,4 @@ test: $(sdl2lib) $(isolib) test.scm
 	TINYSCHEMEINIT=$(tinyschemedir)/init.scm $(tinyschemedir)/scheme test.scm
 
 clean:
-	rm -f *.o $(sdl2lib) $(isolib)
+	rm -f *.o $(sdl2lib) $(isolib) demo
