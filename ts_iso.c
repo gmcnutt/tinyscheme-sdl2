@@ -21,18 +21,18 @@ static inline int _scm_unpack_rect(scheme *sc, pointer *args, SDL_Rect *rect)
 /**
  * Wrapper for iso_blit.
  *
- * (iso-blit renderer texture textsrc mapx mapy)
+ * (iso-blit renderer texture textsrc loclist)
  */
 static pointer ts_iso_blit(scheme *sc, pointer args)
 {
         SDL_Rect src, *psrc=NULL;
         SDL_Renderer *renderer=NULL;
         SDL_Texture *texture=NULL;
-        pointer plist;
+        pointer plist, ploclist, ploc;
         int map_x, map_y;
 
-        if (scm_unpack(sc, &args, "ppldd", &renderer, &texture, &plist,
-                       &map_x, &map_y)) {
+        if (scm_unpack(sc, &args, "ppll", &renderer, &texture, &plist,
+		       &ploclist)) {
                 log_error("%s:%s\n", __FUNCTION__, scm_get_error());
                 return sc->NIL;
         }
@@ -47,7 +47,19 @@ static pointer ts_iso_blit(scheme *sc, pointer args)
                 psrc = &src;
         }
 
-        iso_blit(renderer, texture, psrc, map_x, map_y);
+	while (ploclist != sc->NIL) {
+		if (scm_unpack(sc, &ploclist, "l", &ploc)) {
+			log_error("%s:loclist:%s\n", __FUNCTION__,
+				  scm_get_error());
+			return sc->NIL;
+		}
+		if (scm_unpack(sc, &ploc, "dd", &map_x, &map_y)) {
+			log_error("%s:loc:%s\n", __FUNCTION__,
+				  scm_get_error());
+			return sc->NIL;
+		}
+		iso_blit(renderer, texture, psrc, map_x, map_y);
+	}
 
         return sc->NIL;
 }
@@ -132,7 +144,8 @@ static pointer ts_iso_screen_to_map(scheme *sc, pointer args)
                 return sc->NIL;
         }
 
-        return scm_cons(sc, scm_mk_int(sc, map_x), scm_mk_int(sc, map_y));
+        return scm_cons(sc, scm_mk_int(sc, map_x),
+			scm_cons(sc, scm_mk_int(sc, map_y), sc->NIL));
 }
 
 void init_ts_iso(scheme *sc)

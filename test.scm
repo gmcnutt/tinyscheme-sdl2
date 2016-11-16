@@ -30,7 +30,7 @@
 	((= (car elem) (caaar lst))
 	 (cons (insert-sorted (car lst)
 			      (lambda (a b)
-				(< (cdr a) (cdr b)))
+				(< (cadr a) (cadr b)))
 			      elem)
 	       (cdr lst)))
 	((< (car elem) (caaar lst))
@@ -68,13 +68,10 @@
         (+ off_y (* (+ mapx mapy) tile_h_half)))
       (iso-fill renderer texture '(0 32 64 32) (list 0 0 map_w map_h))
       (for-each (lambda (loclist)
-                  (for-each
-                   (lambda (loc)
-                     (iso-blit renderer texture
-                               (list (* 4 64) (* 7 64) 64 64)
-                               (car loc) (cdr loc)))
-                   loclist))
-                (cdr rocks))
+		  (iso-blit renderer texture
+			    (list (* 4 64) (* 7 64) 64 64)
+			    loclist))
+		(cdr rocks))
       (sdl2-set-render-draw-color renderer 64 32 64 sdl2-alpha-opaque)
       (iso-grid renderer map_w map_h)
       ))
@@ -96,7 +93,6 @@
                          (if (not (null? loc))
 			     (begin
 			       (set-cdr! rocks (insert-2d (cdr rocks) loc))
-			       (println rocks)
 			       )))
                        #t))
 
