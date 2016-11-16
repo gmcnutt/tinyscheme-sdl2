@@ -262,6 +262,10 @@ int main(int argc, char **argv)
                 goto destroy_window;
         }
 
+	SDL_RendererInfo info;
+	SDL_GetRendererInfo(renderer, &info);
+	show_renderer_info(&info);
+
         /* Load the texture image */
         if (! (texture = load_texture(
                        renderer,
