@@ -310,7 +310,8 @@ static pointer ts_sdl2_load_texture(scheme *sc, pointer args)
         }
 
         if (! (surface = IMG_Load(filename))) {
-                log_error("%s:IMG_Load:%s\n", __FUNCTION__, SDL_GetError());
+                log_error("%s:%s:IMG_Load:%s\n", __FUNCTION__, filename,
+			  SDL_GetError());
                 return sc->NIL;
         }
 

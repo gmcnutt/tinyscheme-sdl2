@@ -25,6 +25,19 @@
         (else
          (cons (car lst) (insert-sorted (cdr lst) before? elem)))))
 
+(define (insert-2d lst elem)
+  (cond ((null? lst) (cons (list elem) lst))
+	((= (car elem) (caaar lst))
+	 (cons (insert-sorted (car lst)
+			      (lambda (a b)
+				(< (cdr a) (cdr b)))
+			      elem)
+	       (cdr lst)))
+	((< (car elem) (caaar lst))
+	 (cons (list elem) lst))
+	(else
+	 (cons (car lst) (insert-2d (cdr lst) elem)))))
+
 (load-extension "./ts_sdl2")
 (sdl2-init)
 
@@ -54,9 +67,13 @@
       (define (screen-y mapx mapy)
         (+ off_y (* (+ mapx mapy) tile_h_half)))
       (iso-fill renderer texture '(0 32 64 32) (list 0 0 map_w map_h))
-      (for-each (lambda (loc)
-                  (iso-blit renderer texture
-                            (list (* 4 64) (* 7 64) 64 64) (car loc) (cdr loc)))
+      (for-each (lambda (loclist)
+                  (for-each
+                   (lambda (loc)
+                     (iso-blit renderer texture
+                               (list (* 4 64) (* 7 64) 64 64)
+                               (car loc) (cdr loc)))
+                   loclist))
                 (cdr rocks))
       (sdl2-set-render-draw-color renderer 64 32 64 sdl2-alpha-opaque)
       (iso-grid renderer map_w map_h)
@@ -77,13 +94,10 @@
                      (lambda (event x y)
                        (let ((loc (iso-screen-to-map x y)))
                          (if (not (null? loc))
-                             (set-cdr! rocks
-                                       (insert-sorted (cdr rocks)
-                                                      (lambda (a b)
-                                                        (or (< (car a) (car b))
-                                                            (< (cdr a) (cdr b)))
-                                                        )
-                                                      loc))))
+			     (begin
+			       (set-cdr! rocks (insert-2d (cdr rocks) loc))
+			       (println rocks)
+			       )))
                        #t))
 
   ;; Start the main loop and time the FPS.
